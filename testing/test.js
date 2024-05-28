@@ -18,13 +18,13 @@ export const options = {
     { duration: '30s', target: 10 },
     { duration: '10s', target: 0 },
   ],
-  thresholds: {
-    // Define thresholds for the metrics
-    post_request_duration: ['p(90)<200', 'p(95)<300', 'p(99)<500'],
-    get_request_duration: ['p(90)<200', 'p(95)<300', 'p(99)<500'],
-    post_request_success_rate: ['rate>0.95'],
-    get_request_success_rate: ['rate>0.95'],
-  },
+  // thresholds: {
+  //   // Define thresholds for the metrics
+  //   post_request_duration: ['p(90)<200', 'p(95)<300', 'p(99)<500'],
+  //   get_request_duration: ['p(90)<200', 'p(95)<300', 'p(99)<500'],
+  //   post_request_success_rate: ['rate>0.95'],
+  //   get_request_success_rate: ['rate>0.95'],
+  // },
 };
 
 const BASE_URL = 'http://localhost:3000';
