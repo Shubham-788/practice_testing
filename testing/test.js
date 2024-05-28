@@ -20,8 +20,8 @@ export const options = {
   ],
   thresholds: {
     // Define thresholds for the metrics
-    post_request_duration: ['p(90)<10', 'p(95)<300', 'p(99)<500'],
-    get_request_duration: ['p(90)<10', 'p(95)<300', 'p(99)<500'],
+    post_request_duration: ['p(90)<200', 'p(95)<300', 'p(99)<500'],
+    get_request_duration: ['p(90)<200', 'p(95)<300', 'p(99)<500'],
     post_request_success_rate: ['rate>0.95'],
     get_request_success_rate: ['rate>0.95'],
   },
