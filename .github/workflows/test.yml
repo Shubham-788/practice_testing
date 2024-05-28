@@ -10,13 +10,22 @@ on:
 
 jobs:
   test:
-  
     runs-on: ubuntu-latest
     services:
       mysql:
         image: mysql:5.7
         ports:
           - 3306:3306
+        options: > 
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: node_complete
+          MYSQL_USER: root
+          MYSQL_PASSWORD: password
 
     steps:
     - name: Checkout code
@@ -35,7 +44,7 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         for i in {30..0}; do
-          if mysqladmin ping --host=127.0.0.1 --user=root --password=root --silent; then
+          if docker exec mysql mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
             echo "MySQL is up and running"
             break
           fi
@@ -44,6 +53,7 @@ jobs:
         done
         if [ "$i" = 0 ]; then
           echo "MySQL did not become ready in time"
+          exit 1
         fi
 
     - name: Print MySQL logs
@@ -52,7 +62,7 @@ jobs:
     - name: Start the server
       run: |
         cd server
-        yarn start &
+        NODE_ENV=test yarn start &
 
     - name: Wait for server to be ready
       run: sleep 10
@@ -60,4 +70,3 @@ jobs:
     - name: Run k6 tests
       run: |
         docker run --rm -v ${{ github.workspace }}:/src -w /src loadimpact/k6 run /src/testing/test.js
-        # docker run --rm -v $PWD:/mnt/loadimpact loadimpact/k6 run /testing/test.js
