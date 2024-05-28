@@ -17,15 +17,15 @@ jobs:
         ports:
           - 3306:3306
         options: > 
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
+          --health-cmd="mysqladmin ping --silent" 
+          --health-interval=10s 
+          --health-timeout=5s 
           --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: node_complete
-          MYSQL_USER: root
-          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: node-complete
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpassword
 
     steps:
     - name: Checkout code
@@ -44,7 +44,7 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         for i in {30..0}; do
-          if docker exec mysql mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
+          if docker exec $(docker ps -q --filter ancestor=mysql:5.7) mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
             echo "MySQL is up and running"
             break
           fi
