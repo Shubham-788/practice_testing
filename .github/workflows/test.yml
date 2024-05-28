@@ -21,17 +21,19 @@ jobs:
       with:
         node-version: '14'
 
-    - name: Install dependencies
-      run: yarn install
+    - name: Install server dependencies
+      run: |
+        cd server
+        yarn install
 
     - name: Start the server
-      run: yarn start &
+      run: |
+        cd server
+        yarn start &
 
     - name: Wait for server to be ready
       run: sleep 10
 
-    - name: Install k6
-      run: sudo apt-get install -y k6
-
     - name: Run k6 tests
-      run: k6 run test.js
+      run: |
+        docker run --rm -v $PWD:/mnt/loadimpact loadimpact/k6 run /mnt/loadimpact/test.js
