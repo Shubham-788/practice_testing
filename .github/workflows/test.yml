@@ -34,10 +34,21 @@ jobs:
 
     - name: Wait for MySQL to be ready
       run: |
-        while ! mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; do
-          echo 'waiting for mysql'
+        for i in {30..0}; do
+          if mysqladmin ping --host=127.0.0.1 --user=root --password=root --silent; then
+            echo "MySQL is up and running"
+            break
+          fi
+          echo 'Waiting for MySQL to be ready...'
           sleep 2
         done
+        if [ "$i" = 0 ]; then
+          echo "MySQL did not become ready in time"
+          exit 1
+        fi
+
+    - name: Print MySQL logs
+      run: docker logs $(docker ps -q --filter ancestor=mysql:5.7)
 
     - name: Start the server
       run: |
