@@ -36,4 +36,4 @@ jobs:
 
     - name: Run k6 tests
       run: |
-        docker run --rm -v $PWD:/mnt/loadimpact loadimpact/k6 run /mnt/loadimpact/test.js
+        docker run --rm -v $PWD:/mnt/loadimpact loadimpact/k6 run /testing/test.js
