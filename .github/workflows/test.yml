@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8.0
         ports:
           - 3306:3306
         options: >-
@@ -24,18 +24,18 @@ jobs:
           --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: node-complete
+          MYSQL_DATABASE: node_complete
           MYSQL_USER: testuser
           MYSQL_PASSWORD: testpassword
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '18'
 
     - name: Install server dependencies
       run: |
@@ -88,17 +88,34 @@ jobs:
       run: |
         cd server
         NODE_ENV=test yarn start &
+        # Capture the server PID
+        echo $! > server_pid.txt
 
     - name: Wait for server to be ready
-      run: sleep 20  # Increased wait time to ensure server is ready
-
-    - name: Verify server is running
       run: |
-        if ! curl -s http://localhost:3000/ > /dev/null; then
-          echo "Server is not running or not reachable"
+        # Increase wait time to ensure the server is ready
+        for i in {30..0}; do
+          if curl -s http://localhost:3000/ > /dev/null; then
+            echo "Server is up and running"
+            break
+          fi
+          echo 'Waiting for server to be ready...'
+          sleep 2
+        done
+        if [ "$i" = 0 ]; then
+          echo "Server did not become ready in time"
+          # Print server logs
+          cat server/logs/output.log
           exit 1
         fi
 
     - name: Run k6 tests
       run: |
-        docker run --rm -v ${{ github.workspace }}:/src -w /src grafana/k6 run /src/testing/test.js
+        docker run --rm -v ${{ github.workspace }}:/src -w /src grafana/k6:latest run /src/testing/test.js
+
+    - name: Clean up server
+      run: |
+        # Kill the server process if it's still running
+        if [ -f server_pid.txt ]; then
+          kill $(cat server_pid.txt)
+        fi
