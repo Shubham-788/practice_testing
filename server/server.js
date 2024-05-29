@@ -6,11 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Enable CORS with specific options
-app.use(cors({
-  origin: 'http://localhost:5173', // Your React app's address
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-}));
+app.use(cors());
 
 // MySQL connection configuration
 const connection = mysql.createConnection({
