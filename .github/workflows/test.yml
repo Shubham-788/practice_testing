@@ -13,10 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:5.7
         ports:
           - 3306:3306
         options: >-
+          --name mysql-container
           --health-cmd="mysqladmin ping --silent" 
           --health-interval=10s 
           --health-timeout=5s 
@@ -29,12 +30,12 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v2
       with:
-        node-version: 'lts/*'
+        node-version: '14'
 
     - name: Install server dependencies
       run: |
@@ -43,13 +44,26 @@ jobs:
 
     - name: Configure MySQL
       run: |
-        docker exec mysql mysql -u root -ppassword -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'password';"
+        # Wait for the MySQL container to be healthy before configuring it
+        for i in {30..0}; do
+          if [ "$(docker inspect -f '{{.State.Health.Status}}' mysql-container)" = "healthy" ]; then
+            echo "MySQL container is healthy"
+            break
+          fi
+          echo 'Waiting for MySQL container to be healthy...'
+          sleep 2
+        done
+        if [ "$i" = 0 ]; then
+          echo "MySQL container did not become healthy in time"
+          exit 1
+        fi
+
+        docker exec mysql-container mysql -u root -ppassword -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'password';"
 
     - name: Wait for MySQL to be ready
       run: |
         for i in {30..0}; do
-          CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:8.0)
-          if [ -n "$CONTAINER_ID" ] && docker exec "$CONTAINER_ID" mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
+          if docker exec mysql-container mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
             echo "MySQL is up and running"
             break
           fi
@@ -63,9 +77,8 @@ jobs:
 
     - name: Print MySQL logs
       run: |
-        CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:8.0)
-        if [ -n "$CONTAINER_ID" ]; then
-          docker logs "$CONTAINER_ID"
+        if docker ps --filter name=mysql-container --filter status=running | grep mysql-container; then
+          docker logs mysql-container
         else
           echo "MySQL container not found"
           exit 1
