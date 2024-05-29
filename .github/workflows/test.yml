@@ -1,83 +1,3 @@
-# name: Run k6 Tests
-
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
-
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     services:
-#       mysql:
-#         image: mysql:5.7
-#         ports:
-#           - 3306:3306
-#         options: >-
-#           --health-cmd="mysqladmin ping --silent" 
-#           --health-interval=10s 
-#           --health-timeout=5s 
-#           --health-retries=3
-#         env:
-#           MYSQL_ROOT_PASSWORD: password
-#           MYSQL_DATABASE: node-complete
-#           MYSQL_USER: testuser
-#           MYSQL_PASSWORD: testpassword
-
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v2
-
-#     - name: Set up Node.js
-#       uses: actions/setup-node@v2
-#       with:
-#         node-version: '14'
-
-#     - name: Install server dependencies
-#       run: |
-#         cd server
-#         yarn install
-
-#     - name: Wait for MySQL to be ready
-#       run: |
-#         for i in {30..0}; do
-#           CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
-#           if [ -n "$CONTAINER_ID" ] && docker exec "$CONTAINER_ID" mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
-#             echo "MySQL is up and running"
-#             break
-#           fi
-#           echo 'Waiting for MySQL to be ready...'
-#           sleep 2
-#         done
-#         if [ "$i" = 0 ]; then
-#           echo "MySQL did not become ready in time"
-#           exit 1
-#         fi
-
-#     - name: Print MySQL logs
-#       run: |
-#         CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
-#         if [ -n "$CONTAINER_ID" ]; then
-#           docker logs "$CONTAINER_ID"
-#         else
-#           echo "MySQL container not found"
-#           exit 1
-#         fi
-
-#     - name: Start the server
-#       run: |
-#         cd server
-#         NODE_ENV=test yarn start &
-
-#     - name: Wait for server to be ready
-#       run: sleep 10
-
-#     - name: Run k6 tests
-#       run: |
-#         docker run --rm -v ${{ github.workspace }}:/src -w /src loadimpact/k6 run /src/testing/test.js
 name: Run k6 Tests
 
 on:
@@ -93,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8.0
         ports:
           - 3306:3306
         options: >-
@@ -109,12 +29,12 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: 'lts/*'
 
     - name: Install server dependencies
       run: |
@@ -124,7 +44,7 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         for i in {30..0}; do
-          CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
+          CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:8.0)
           if [ -n "$CONTAINER_ID" ] && docker exec "$CONTAINER_ID" mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
             echo "MySQL is up and running"
             break
@@ -139,7 +59,7 @@ jobs:
 
     - name: Print MySQL logs
       run: |
-        CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
+        CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:8.0)
         if [ -n "$CONTAINER_ID" ]; then
           docker logs "$CONTAINER_ID"
         else
@@ -153,7 +73,14 @@ jobs:
         NODE_ENV=test yarn start &
 
     - name: Wait for server to be ready
-      run: sleep 10
+      run: sleep 20  # Increased wait time to ensure server is ready
+
+    - name: Verify server is running
+      run: |
+        if ! curl -s http://localhost:3000/ > /dev/null; then
+          echo "Server is not running or not reachable"
+          exit 1
+        fi
 
     - name: Run k6 tests
       run: |
