@@ -88,14 +88,11 @@ jobs:
       run: |
         cd server
         NODE_ENV=test yarn start &
-        # Capture the server PID
-        echo $! > server_pid.txt
 
     - name: Wait for server to be ready
       run: |
-        # Increase wait time to ensure the server is ready
         for i in {30..0}; do
-          if curl -s http://localhost:3000/ > /dev/null; then
+          if curl -s http://localhost:3000 > /dev/null; then
             echo "Server is up and running"
             break
           fi
@@ -104,8 +101,6 @@ jobs:
         done
         if [ "$i" = 0 ]; then
           echo "Server did not become ready in time"
-          # Print server logs
-          cat server/logs/output.log
           exit 1
         fi
 
@@ -115,7 +110,4 @@ jobs:
 
     - name: Clean up server
       run: |
-        # Kill the server process if it's still running
-        if [ -f server_pid.txt ]; then
-          kill $(cat server_pid.txt)
-        fi
+        pkill -f "yarn start"
