@@ -19,7 +19,8 @@ jobs:
         options: >-
           --health-cmd="mysqladmin ping --silent" 
           --health-interval=10s 
-          --health-timeout=5s
+          --health-timeout=5s 
+          --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: node-complete
@@ -43,7 +44,8 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         for i in {30..0}; do
-          if docker exec mysql mysqladmin ping --host=127.0.0.1 --user=testuser --password=testpassword --silent; then
+          CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
+          if [ -n "$CONTAINER_ID" ] && docker exec "$CONTAINER_ID" mysqladmin ping --host=127.0.0.1 --user=testuser --password=testpassword --silent; then
             echo "MySQL is up and running"
             break
           fi
@@ -56,7 +58,14 @@ jobs:
         fi
 
     - name: Print MySQL logs
-      run: docker logs mysql
+      run: |
+        CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
+        if [ -n "$CONTAINER_ID" ]; then
+          docker logs "$CONTAINER_ID"
+        else
+          echo "MySQL container not found"
+          exit 1
+        fi
 
     - name: Start the server
       run: |
