@@ -22,10 +22,10 @@ jobs:
           --health-timeout=5s 
           --health-retries=3
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: node-complete
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: testpassword
+          MYSQL_USER: root
+          MYSQL_PASSWORD: password
 
     steps:
     - name: Checkout code
@@ -45,7 +45,7 @@ jobs:
       run: |
         for i in {30..0}; do
           CONTAINER_ID=$(docker ps -q --filter ancestor=mysql:5.7)
-          if [ -n "$CONTAINER_ID" ] && docker exec "$CONTAINER_ID" mysqladmin ping --host=127.0.0.1 --user=testuser --password=testpassword --silent; then
+          if [ -n "$CONTAINER_ID" ] && docker exec "$CONTAINER_ID" mysqladmin ping --host=127.0.0.1 --user=root --password=password --silent; then
             echo "MySQL is up and running"
             break
           fi
