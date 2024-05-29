@@ -24,7 +24,7 @@ jobs:
           --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: node_complete
+          MYSQL_DATABASE: node-complete
           MYSQL_USER: testuser
           MYSQL_PASSWORD: testpassword
 
