@@ -41,6 +41,10 @@ jobs:
         cd server
         yarn install
 
+    - name: Configure MySQL
+      run: |
+        docker exec mysql mysql -u root -ppassword -e "ALTER USER 'testuser'@'%' IDENTIFIED WITH mysql_native_password BY 'testpassword';"
+
     - name: Wait for MySQL to be ready
       run: |
         for i in {30..0}; do
