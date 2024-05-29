@@ -43,7 +43,7 @@ jobs:
 
     - name: Configure MySQL
       run: |
-        docker exec mysql mysql -u root -ppassword -e "ALTER USER 'testuser'@'%' IDENTIFIED WITH mysql_native_password BY 'testpassword';"
+        docker exec mysql mysql -u root -ppassword -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'password';"
 
     - name: Wait for MySQL to be ready
       run: |
