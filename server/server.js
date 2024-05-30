@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
   password: 'password',
-  database: 'node-complete'
+  database: 'node_complete'
 });
 
 // Connect to MySQL database
