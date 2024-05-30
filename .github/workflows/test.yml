@@ -108,7 +108,8 @@ jobs:
 
     - name: Run k6 tests
       run: |
-        docker run --rm -v ${{ github.workspace }}:/src -w /src grafana/k6:latest run /src/testing/test.js
+        sudo apt-get install -y k6
+        k6 run testing/test.js
 
     - name: Clean up server
       run: |
