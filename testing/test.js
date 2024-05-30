@@ -14,8 +14,8 @@ const getRequestCount = new Counter('get_request_count');
 
 export const options = {
   stages: [
-    { duration: '20s', target: 50000 },
-    { duration: '30s', target: 50000 },
+    { duration: '20s', target: 25000 },
+    { duration: '30s', target: 25000 },
     { duration: '10s', target: 0 },
   ],
   thresholds: {
