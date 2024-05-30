@@ -62,7 +62,7 @@ jobs:
 
         # Ensure the database schema is created
         docker exec mysql-container mysql -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS \`node_complete\`;"
-        docker exec mysql-container mysql -u root -ppassword -e "CREATE TABLE IF NOT EXISTS \`node_complete\`.message (id INT AUTO_INCREMENT PRIMARY KEY, content VARCHAR(255) NOT NULL);"
+        docker exec mysql-container mysql -u root -ppassword -e "CREATE TABLE IF NOT EXISTS \`node_complete\`.message (id INT AUTO_INCREMENT PRIMARY KEY, message VARCHAR(255) NOT NULL);"
 
         # Seed the database if necessary
         docker exec mysql-container mysql -u root -ppassword node_complete -e "INSERT INTO message (content) VALUES ('Test message 1'), ('Test message 2');"
