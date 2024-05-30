@@ -70,7 +70,7 @@ jobs:
           echo 'Waiting for MySQL to be ready...'
           sleep 2
         done
-        if [ "$i" = 0 ]; then
+        if [ "$i" = 0]; then
           echo "MySQL did not become ready in time"
           exit 1
         fi
@@ -100,16 +100,23 @@ jobs:
           echo 'Waiting for server to be ready...'
           sleep 2
         done
-        if [ "$i" = 0 ]; then
+        if [ "$i" = 0]; then
           echo "Server did not become ready in time"
           cat server/server.log
           exit 1
         fi
 
-    - name: Run k6 tests
+    - name: Install k6
       run: |
+        sudo apt-get update
+        sudo apt-get install -y gnupg2
+        curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
+        echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
         sudo apt-get install -y k6
-        k6 run testing/test.js
+
+    - name: Run k6 tests
+      run: k6 run testing/test.js
 
     - name: Clean up server
       run: |
